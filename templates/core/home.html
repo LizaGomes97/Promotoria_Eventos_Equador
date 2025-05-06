@@ -1,0 +1,301 @@
+<!-- templates/core/home.html -->
+{% extends 'base.html' %}
+
+{% block title %}{{ config.nome_site|default:"Equador Eventos" }} - Promotoria de Eventos Ecuador{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+{% endblock %}
+
+{% block content %}
+<!-- Hero Slider -->
+<section class="hero-slider">
+    <div class="swiper hero-swiper">
+        <div class="swiper-wrapper">
+            {% for banner in banners %}
+            <div class="swiper-slide" style="background-image: url('{{ banner.imagem.url }}');">
+                <div class="overlay"></div>
+                <div class="slide-content">
+                    <h1 class="display-4 fw-bold mb-3">{{ banner.titulo }}</h1>
+                    {% if banner.subtitulo %}
+                    <p class="lead mb-4">{{ banner.subtitulo }}</p>
+                    {% endif %}
+                    {% if banner.link and banner.texto_botao %}
+                    <a href="{{ banner.link }}" class="btn btn-primary btn-lg">{{ banner.texto_botao }}</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="swiper-slide" style="background-image: url('/static/images/default-banner.jpg');">
+                <div class="overlay"></div>
+                <div class="slide-content">
+                    <h1 class="display-4 fw-bold mb-3">Eventos Inolvidables</h1>
+                    <p class="lead mb-4">Somos expertos en la organización de eventos corporativos y sociales en Ecuador.</p>
+                    <a href="{% url 'contato:contato' %}" class="btn btn-primary btn-lg">Contáctanos</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+    </div>
+</section>
+
+<!-- Serviços em Destaque -->
+<section class="py-5 bg-light section-padding">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-lg-7 mx-auto text-center section-title">
+                <h2 class="fw-bold mb-3">Nuestros Servicios</h2>
+                <p class="text-muted">Ofrecemos una amplia gama de servicios para hacer de su evento una experiencia inolvidable.</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% for servico in servicos_destaque %}
+            <div class="col-md-6 col-lg-3">
+                <div class="card service-card border-0 h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="service-icon">
+                            <i class="fas {{ servico.icone }}"></i>
+                        </div>
+                        <h3 class="h5 mb-3">{{ servico.nome }}</h3>
+                        <p class="text-muted mb-4">{{ servico.descricao_curta|truncatechars:100 }}</p>
+                        <a href="{% url 'core:servico_detalhe' servico.slug %}" class="btn btn-sm btn-outline-primary">Ver más</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p>No hay servicios destacados actualmente.</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{% url 'core:servicos' %}" class="btn btn-primary">Ver todos los servicios</a>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-primary text-white cta-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mb-4 mb-lg-0">
+                <h2 class="fw-bold mb-3">¿Estás pensando en organizar un evento?</h2>
+                <p class="lead mb-0">Nuestro equipo de profesionales está listo para ayudarte a crear una experiencia inolvidable.</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a href="{% url 'contato:contato' %}" class="btn btn-light btn-lg">Solicitar cotización</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Portfólio em Destaque -->
+<section class="py-5 section-padding">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-lg-7 mx-auto text-center section-title">
+                <h2 class="fw-bold mb-3">Portafolio de Eventos</h2>
+                <p class="text-muted">Conoce algunos de los eventos más destacados que hemos organizado.</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% for projeto in portfolio_destaque %}
+            <div class="col-md-6 col-lg-4">
+                <div class="portfolio-item">
+                    <img src="{{ projeto.imagem_principal.url }}" alt="{{ projeto.titulo }}" class="img-fluid w-100" style="height: 300px; object-fit: cover;">
+                    <div class="portfolio-overlay">
+                        <div class="text-center text-white p-3">
+                            <h3 class="h5">{{ projeto.titulo }}</h3>
+                            <p class="mb-3">{{ projeto.cliente }}</p>
+                            <a href="{% url 'core:portfolio_detalhe' projeto.slug %}" class="btn btn-outline-light">Ver proyecto</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p>No hay proyectos destacados actualmente.</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{% url 'core:portfolio' %}" class="btn btn-primary">Ver portafolio completo</a>
+        </div>
+    </div>
+</section>
+
+<!-- Depoimentos -->
+<section class="py-5 bg-light section-padding">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-lg-7 mx-auto text-center section-title">
+                <h2 class="fw-bold mb-3">Lo que dicen nuestros clientes</h2>
+                <p class="text-muted">Testimonios de clientes satisfechos que confiaron en nosotros.</p>
+            </div>
+        </div>
+        
+        <div class="swiper testimonial-swiper">
+            <div class="swiper-wrapper py-3">
+                {% for depoimento in depoimentos %}
+                <div class="swiper-slide">
+                    <div class="testimonial-card bg-white p-4">
+                        <div class="d-flex align-items-center mb-4">
+                            {% if depoimento.foto %}
+                            <img src="{{ depoimento.foto.url }}" alt="{{ depoimento.cliente }}" class="testimonial-img me-3">
+                            {% else %}
+                            <div class="testimonial-img me-3 bg-primary d-flex align-items-center justify-content-center text-white">
+                                {{ depoimento.cliente|slice:":1" }}
+                            </div>
+                            {% endif %}
+                            <div>
+                                <h3 class="h5 mb-1">{{ depoimento.cliente }}</h3>
+                                {% if depoimento.cargo or depoimento.empresa %}
+                                <p class="text-muted small mb-0">
+                                    {% if depoimento.cargo %}{{ depoimento.cargo }}{% endif %}
+                                    {% if depoimento.cargo and depoimento.empresa %} - {% endif %}
+                                    {% if depoimento.empresa %}{{ depoimento.empresa }}{% endif %}
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <p class="fst-italic mb-0">{{ depoimento.texto|truncatechars:200 }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="swiper-slide">
+                    <div class="testimonial-card bg-white p-4">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="testimonial-img me-3 bg-primary d-flex align-items-center justify-content-center text-white">
+                                J
+                            </div>
+                            <div>
+                                <h3 class="h5 mb-1">Juan Pérez</h3>
+                                <p class="text-muted small mb-0">Gerente de Marketing - ABC Corp</p>
+                            </div>
+                        </div>
+                        <p class="fst-italic mb-0">"La organización del evento superó todas nuestras expectativas. El equipo fue muy profesional y cada detalle fue cuidadosamente planificado. ¡Definitivamente los recomendaría!"</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="swiper-pagination"></div>
+        </div>
+    </div>
+</section>
+
+<!-- Parceiros -->
+<section class="py-5 section-padding">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-lg-7 mx-auto text-center section-title">
+                <h2 class="fw-bold mb-3">Nuestros Aliados</h2>
+                <p class="text-muted">Trabajamos con las mejores marcas para garantizar eventos de calidad.</p>
+            </div>
+        </div>
+        
+        <div class="swiper partner-swiper">
+            <div class="swiper-wrapper align-items-center">
+                {% for parceiro in parceiros %}
+                <div class="swiper-slide text-center">
+                    {% if parceiro.website %}
+                    <a href="{{ parceiro.website }}" target="_blank">
+                        <img src="{{ parceiro.logo.url }}" alt="{{ parceiro.nome }}" class="partner-logo">
+                    </a>
+                    {% else %}
+                    <img src="{{ parceiro.logo.url }}" alt="{{ parceiro.nome }}" class="partner-logo">
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="swiper-slide text-center">
+                    <img src="/static/images/partner1.png" alt="Partner 1" class="partner-logo">
+                </div>
+                <div class="swiper-slide text-center">
+                    <img src="/static/images/partner2.png" alt="Partner 2" class="partner-logo">
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Hero Slider
+        initializeSwiper('.hero-swiper', {
+            slidesPerView: 1,
+            spaceBetween: 0,
+            loop: true,
+            autoplay: {
+                delay: 5000,
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: '.hero-swiper .swiper-pagination',
+                clickable: true,
+            },
+            navigation: {
+                nextEl: '.hero-swiper .swiper-button-next',
+                prevEl: '.hero-swiper .swiper-button-prev',
+            },
+        });
+        
+        // Testimonial Slider
+        initializeSwiper('.testimonial-swiper', {
+            slidesPerView: 1,
+            spaceBetween: 30,
+            loop: true,
+            autoplay: {
+                delay: 4000,
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: '.testimonial-swiper .swiper-pagination',
+                clickable: true,
+            },
+            breakpoints: {
+                640: {
+                    slidesPerView: 1,
+                },
+                768: {
+                    slidesPerView: 2,
+                },
+                1024: {
+                    slidesPerView: 3,
+                },
+            },
+        });
+        
+        // Partners Slider
+        initializeSwiper('.partner-swiper', {
+            slidesPerView: 2,
+            spaceBetween: 30,
+            loop: true,
+            autoplay: {
+                delay: 3000,
+                disableOnInteraction: false,
+            },
+            breakpoints: {
+                640: {
+                    slidesPerView: 3,
+                },
+                768: {
+                    slidesPerView: 4,
+                },
+                1024: {
+                    slidesPerView: 5,
+                },
+            },
+        });
+    });
+</script>
+{% endblock %}

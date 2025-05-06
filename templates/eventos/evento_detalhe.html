@@ -1,0 +1,379 @@
+<!-- templates/eventos/evento_detalhe.html -->
+{% extends 'base.html' %}
+
+{% block title %}{{ evento.nome }} - {{ config.nome_site|default:"Equador Eventos" }}{% endblock %}
+
+{% block meta_description %}{{ evento.descricao_curta|truncatechars:160 }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.css" />
+{% endblock %}
+
+{% block content %}
+<!-- Cabeçalho da Página -->
+<section class="page-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold">{{ evento.nome }}</h1>
+                <p class="lead">{{ evento.descricao_curta }}</p>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center">
+                        <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-white">Inicio</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'eventos:eventos_lista' %}" class="text-white">Eventos</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ evento.nome }}</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Detalhes do Evento -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Conteúdo Principal -->
+            <div class="col-lg-8">
+                <!-- Imagem Principal -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <img src="{{ evento.imagem_principal.url }}" alt="{{ evento.nome }}" class="card-img-top" style="height: 400px; object-fit: cover;">
+                    
+                    <!-- Badge Status -->
+                    {% if evento.status == 'agendado' %}
+                        <div class="badge bg-success position-absolute end-0 m-3">Agendado</div>
+                    {% elif evento.status == 'realizado' %}
+                        <div class="badge bg-secondary position-absolute end-0 m-3">Realizado</div>
+                    {% elif evento.status == 'cancelado' %}
+                        <div class="badge bg-danger position-absolute end-0 m-3">Cancelado</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Descrição -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h2 class="h4 mb-4 border-bottom pb-3">Descripción del Evento</h2>
+                        
+                        <div class="event-description">
+                            {{ evento.descricao|safe }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Galeria de Imagens -->
+                {% if evento.imagens.exists %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h2 class="h4 mb-4 border-bottom pb-3">Galería de Imágenes</h2>
+                        
+                        <div class="row g-3 gallery-container">
+                            {% for imagem in evento.imagens.all %}
+                            <div class="col-6 col-md-4">
+                                <a href="{{ imagem.imagem.url }}" class="gallery-item" data-fancybox="gallery" data-caption="{{ imagem.titulo|default:evento.nome }}">
+                                    <img src="{{ imagem.imagem.url }}" alt="{{ imagem.titulo|default:evento.nome }}" class="img-fluid rounded" style="height: 180px; object-fit: cover;">
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Compartilhar -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h2 class="h4 mb-4 border-bottom pb-3">Compartir Evento</h2>
+                        
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" class="btn btn-outline-primary" target="_blank">
+                                <i class="fab fa-facebook-f me-2"></i> Facebook
+                            </a>
+                            
+                            <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ evento.nome }}" class="btn btn-outline-info" target="_blank">
+                                <i class="fab fa-twitter me-2"></i> Twitter
+                            </a>
+                            
+                            <a href="https://wa.me/?text={{ evento.nome }}%20-%20{{ request.build_absolute_uri }}" class="btn btn-outline-success" target="_blank">
+                                <i class="fab fa-whatsapp me-2"></i> WhatsApp
+                            </a>
+                            
+                            <a href="mailto:?subject={{ evento.nome }}&body={{ evento.descricao_curta }}%0A%0A{{ request.build_absolute_uri }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-envelope me-2"></i> Email
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Barra Lateral -->
+            <div class="col-lg-4">
+                <!-- Detalhes do Evento -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h3 class="h5 mb-4 border-bottom pb-3">Detalles del Evento</h3>
+                        
+                        <ul class="list-unstyled">
+                            <li class="d-flex mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-calendar-alt fa-2x text-primary"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h4 class="h6 mb-1">Fecha</h4>
+                                    <p class="mb-0">
+                                        {{ evento.data_inicio|date:"j F, Y" }}
+                                        {% if evento.data_inicio|date:"Y-m-d" != evento.data_fim|date:"Y-m-d" %}
+                                            - {{ evento.data_fim|date:"j F, Y" }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </li>
+                            
+                            <li class="d-flex mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-clock fa-2x text-primary"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h4 class="h6 mb-1">Horario</h4>
+                                    <p class="mb-0">
+                                        {{ evento.data_inicio|date:"H:i" }} - {{ evento.data_fim|date:"H:i" }}
+                                    </p>
+                                </div>
+                            </li>
+                            
+                            <li class="d-flex mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-map-marker-alt fa-2x text-primary"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h4 class="h6 mb-1">Ubicación</h4>
+                                    <p class="mb-0">
+                                        {{ evento.local }}
+                                        <br>{{ evento.endereco }}
+                                        <br>{{ evento.cidade }}
+                                    </p>
+                                </div>
+                            </li>
+                            
+                            <li class="d-flex mb-3">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-tag fa-2x text-primary"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h4 class="h6 mb-1">Tipo de Evento</h4>
+                                    <p class="mb-0">
+                                        <a href="{% url 'eventos:eventos_por_tipo' evento.tipo.slug %}" class="text-decoration-none">
+                                            {{ evento.tipo.nome }}
+                                        </a>
+                                    </p>
+                                </div>
+                            </li>
+                        </ul>
+                        
+                        <!-- Botão Call to Action -->
+                        <div class="mt-4">
+                            <a href="{% url 'contato:contato' %}?assunto=informacao&mensagem=Me interesa el evento: {{ evento.nome }}" class="btn btn-primary w-100">Solicitar Información</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mapa -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h3 class="h5 mb-3">Mapa</h3>
+                        
+                        <div class="ratio ratio-16x9">
+                            <iframe 
+                                src="https://www.google.com/maps/embed/v1/place?key=AIzaSyD_YOUR_API_KEY&q={{ evento.endereco|urlencode }}+{{ evento.cidade|urlencode }}" 
+                                allowfullscreen="" 
+                                loading="lazy" 
+                                referrerpolicy="no-referrer-when-downgrade">
+                            </iframe>
+                        </div>
+                        
+                        <a href="https://www.google.com/maps/search/?api=1&query={{ evento.endereco|urlencode }}+{{ evento.cidade|urlencode }}" class="btn btn-outline-primary w-100 mt-3" target="_blank">
+                            <i class="fas fa-directions me-2"></i> Cómo llegar
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Adicionar ao Calendário -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <h3 class="h5 mb-3">Añadir al Calendario</h3>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="#" class="btn btn-outline-secondary" id="addGoogleCalendar">
+                                <i class="fab fa-google me-2"></i> Google Calendar
+                            </a>
+                            
+                            <a href="#" class="btn btn-outline-secondary" id="addOutlookCalendar">
+                                <i class="fab fa-microsoft me-2"></i> Outlook
+                            </a>
+                            
+                            <a href="#" class="btn btn-outline-secondary" id="addAppleCalendar">
+                                <i class="fab fa-apple me-2"></i> Apple Calendar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Eventos Relacionados -->
+        {% if eventos_relacionados %}
+        <div class="row mt-5">
+            <div class="col-12">
+                <h2 class="text-center mb-4">Eventos Relacionados</h2>
+                
+                <div class="row g-4">
+                    {% for ev_rel in eventos_relacionados %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card evento-card h-100 border-0 shadow-sm">
+                            <!-- Badge Status -->
+                            {% if ev_rel.status == 'agendado' %}
+                                <div class="badge bg-success position-absolute end-0 m-3">Agendado</div>
+                            {% elif ev_rel.status == 'realizado' %}
+                                <div class="badge bg-secondary position-absolute end-0 m-3">Realizado</div>
+                            {% elif ev_rel.status == 'cancelado' %}
+                                <div class="badge bg-danger position-absolute end-0 m-3">Cancelado</div>
+                            {% endif %}
+                            
+                            <!-- Imagem -->
+                            <div class="position-relative">
+                                <a href="{% url 'eventos:evento_detalhe' ev_rel.slug %}">
+                                    <img src="{{ ev_rel.imagem_principal.url }}" alt="{{ ev_rel.nome }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                                </a>
+                                
+                                <!-- Data Sobreposta -->
+                                <div class="event-date position-absolute start-0 bottom-0 m-3 bg-white text-center p-2 rounded shadow-sm">
+                                    <div class="event-day fw-bold">{{ ev_rel.data_inicio|date:"d" }}</div>
+                                    <div class="event-month small text-uppercase">{{ ev_rel.data_inicio|date:"M" }}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="card-body p-4">
+                                <!-- Tipo de evento -->
+                                <div class="event-category mb-2">
+                                    <span class="badge rounded-pill bg-primary">{{ ev_rel.tipo.nome }}</span>
+                                </div>
+                                
+                                <!-- Título e Descrição -->
+                                <h3 class="h5 card-title mb-2">
+                                    <a href="{% url 'eventos:evento_detalhe' ev_rel.slug %}" class="text-decoration-none">{{ ev_rel.nome }}</a>
+                                </h3>
+                                <p class="card-text text-muted small mb-3">{{ ev_rel.descricao_curta|truncatechars:80 }}</p>
+                                
+                                <!-- Detalhes -->
+                                <div class="event-details text-muted small mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-map-marker-alt me-2"></i>
+                                        <span>{{ ev_rel.local }}, {{ ev_rel.cidade }}</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Botão -->
+                                <a href="{% url 'eventos:evento_detalhe' ev_rel.slug %}" class="btn btn-sm btn-outline-primary">Ver detalles</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4.0/dist/fancybox.umd.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar Fancybox
+        Fancybox.bind("[data-fancybox]", {
+            // Opções do Fancybox
+        });
+        
+        // Funções para adicionar ao calendário
+        function formatCalendarDate(dateStr) {
+            const date = new Date(dateStr);
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            return `${yyyy}${mm}${dd}`;
+        }
+        
+        function formatCalendarTime(dateStr) {
+            const date = new Date(dateStr);
+            const hh = String(date.getHours()).padStart(2, '0');
+            const mm = String(date.getMinutes()).padStart(2, '0');
+            const ss = String(date.getSeconds()).padStart(2, '0');
+            return `${hh}${mm}${ss}`;
+        }
+        
+        // Google Calendar
+        document.getElementById('addGoogleCalendar').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const startDate = new Date('{{ evento.data_inicio|date:"Y-m-d H:i:s" }}');
+            const endDate = new Date('{{ evento.data_fim|date:"Y-m-d H:i:s" }}');
+            
+            let url = 'https://calendar.google.com/calendar/render?action=TEMPLATE';
+            url += '&text=' + encodeURIComponent('{{ evento.nome }}');
+            url += '&details=' + encodeURIComponent('{{ evento.descricao_curta }}');
+            url += '&location=' + encodeURIComponent('{{ evento.local }}, {{ evento.endereco }}, {{ evento.cidade }}');
+            url += '&dates=' + formatCalendarDate(startDate) + 'T' + formatCalendarTime(startDate);
+            url += '/' + formatCalendarDate(endDate) + 'T' + formatCalendarTime(endDate);
+            
+            window.open(url, '_blank');
+        });
+        
+        // Outlook Calendar
+        document.getElementById('addOutlookCalendar').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const startDate = new Date('{{ evento.data_inicio|date:"Y-m-d H:i:s" }}');
+            const endDate = new Date('{{ evento.data_fim|date:"Y-m-d H:i:s" }}');
+            
+            let url = 'https://outlook.live.com/calendar/0/deeplink/compose?path=%2Fcalendar%2Faction%2Fcompose&rru=addevent';
+            url += '&subject=' + encodeURIComponent('{{ evento.nome }}');
+            url += '&body=' + encodeURIComponent('{{ evento.descricao_curta }}');
+            url += '&location=' + encodeURIComponent('{{ evento.local }}, {{ evento.endereco }}, {{ evento.cidade }}');
+            url += '&startdt=' + startDate.toISOString();
+            url += '&enddt=' + endDate.toISOString();
+            
+            window.open(url, '_blank');
+        });
+        
+        // Apple Calendar
+        document.getElementById('addAppleCalendar').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const startDate = new Date('{{ evento.data_inicio|date:"Y-m-d H:i:s" }}');
+            const endDate = new Date('{{ evento.data_fim|date:"Y-m-d H:i:s" }}');
+            
+            let url = 'data:text/calendar;charset=utf8,';
+            url += encodeURIComponent([
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'BEGIN:VEVENT',
+                'URL:' + window.location.href,
+                'DTSTART:' + formatCalendarDate(startDate) + 'T' + formatCalendarTime(startDate),
+                'DTEND:' + formatCalendarDate(endDate) + 'T' + formatCalendarTime(endDate),
+                'SUMMARY:' + '{{ evento.nome }}',
+                'DESCRIPTION:' + '{{ evento.descricao_curta }}',
+                'LOCATION:' + '{{ evento.local }}, {{ evento.endereco }}, {{ evento.cidade }}',
+                'END:VEVENT',
+                'END:VCALENDAR'
+            ].join('\n'));
+            
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', '{{ evento.nome }}.ics');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    });
+</script>
+{% endblock %}

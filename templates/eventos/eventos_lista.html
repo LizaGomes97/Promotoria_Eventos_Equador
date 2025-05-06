@@ -1,0 +1,282 @@
+<!-- templates/eventos/eventos_lista.html -->
+{% extends 'base.html' %}
+
+{% block title %}Eventos - {{ config.nome_site|default:"Equador Eventos" }}{% endblock %}
+
+{% block meta_description %}Descubre nuestros eventos corporativos y sociales en Ecuador. Creamos experiencias memorables para cada ocasión.{% endblock %}
+
+{% block content %}
+<!-- Cabeçalho da Página -->
+<section class="page-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold">Eventos</h1>
+                <p class="lead">Descubre nuestros próximos eventos y las experiencias que creamos</p>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center">
+                        <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-white">Inicio</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Eventos</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Filtros e Eventos -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Filtros -->
+            <div class="col-lg-3 mb-4 mb-lg-0">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h5 mb-3">Filtros</h3>
+                        
+                        <form action="{% url 'eventos:eventos_lista' %}" method="get" id="filtrosForm">
+                            <!-- Busca -->
+                            <div class="mb-3">
+                                <label for="busca" class="form-label">Búsqueda</label>
+                                <input type="text" class="form-control" id="busca" name="busca" value="{{ filtros.busca|default:'' }}" placeholder="Palabra clave...">
+                            </div>
+                            
+                            <!-- Tipo de Evento -->
+                            <div class="mb-3">
+                                <label for="tipo" class="form-label">Tipo de Evento</label>
+                                <select class="form-select" id="tipo" name="tipo">
+                                    <option value="">Todos los tipos</option>
+                                    {% for tipo in tipos_evento %}
+                                        <option value="{{ tipo.id }}" {% if filtros.tipo_id == tipo.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ tipo.nome }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Status -->
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Estado</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="">Todos los estados</option>
+                                    <option value="agendado" {% if filtros.status == "agendado" %}selected{% endif %}>Agendado</option>
+                                    <option value="realizado" {% if filtros.status == "realizado" %}selected{% endif %}>Realizado</option>
+                                    <option value="cancelado" {% if filtros.status == "cancelado" %}selected{% endif %}>Cancelado</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Data Início -->
+                            <div class="mb-3">
+                                <label for="data_inicio" class="form-label">Fecha de inicio (desde)</label>
+                                <input type="date" class="form-control" id="data_inicio" name="data_inicio" value="{{ filtros.data_inicio|date:'Y-m-d'|default:'' }}">
+                            </div>
+                            
+                            <!-- Data Fim -->
+                            <div class="mb-3">
+                                <label for="data_fim" class="form-label">Fecha de inicio (hasta)</label>
+                                <input type="date" class="form-control" id="data_fim" name="data_fim" value="{{ filtros.data_fim|date:'Y-m-d'|default:'' }}">
+                            </div>
+                            
+                            <!-- Botões -->
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">Filtrar</button>
+                                <a href="{% url 'eventos:eventos_lista' %}" class="btn btn-outline-secondary">Limpiar filtros</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Calendário de Eventos -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body">
+                        <h3 class="h5 mb-3">Calendario</h3>
+                        <p>Visualiza todos nuestros eventos en el calendario.</p>
+                        <div class="d-grid">
+                            <a href="{% url 'eventos:calendario_eventos' %}" class="btn btn-outline-primary">Ver calendario</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Lista de Eventos -->
+            <div class="col-lg-9">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2>Eventos</h2>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="ordenarPor" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Ordenar por
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="ordenarPor">
+                                    <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&ordem=data_asc">Fecha (más próxima)</a></li>
+                                    <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&ordem=data_desc">Fecha (más lejana)</a></li>
+                                    <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&ordem=nome_asc">Nombre (A-Z)</a></li>
+                                    <li><a class="dropdown-item" href="?{{ request.GET.urlencode }}&ordem=nome_desc">Nombre (Z-A)</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if eventos %}
+                <div class="row g-4">
+                    {% for evento in eventos %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card evento-card h-100 border-0 shadow-sm">
+                            <!-- Badge Status -->
+                            {% if evento.status == 'agendado' %}
+                                <div class="badge bg-success position-absolute end-0 m-3">Agendado</div>
+                            {% elif evento.status == 'realizado' %}
+                                <div class="badge bg-secondary position-absolute end-0 m-3">Realizado</div>
+                            {% elif evento.status == 'cancelado' %}
+                                <div class="badge bg-danger position-absolute end-0 m-3">Cancelado</div>
+                            {% endif %}
+                            
+                            <!-- Imagem -->
+                            <div class="position-relative">
+                                <a href="{% url 'eventos:evento_detalhe' evento.slug %}">
+                                    <img src="{{ evento.imagem_principal.url }}" alt="{{ evento.nome }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                                </a>
+                                
+                                <!-- Data Sobreposta -->
+                                <div class="event-date position-absolute start-0 bottom-0 m-3 bg-white text-center p-2 rounded shadow-sm">
+                                    <div class="event-day fw-bold">{{ evento.data_inicio|date:"d" }}</div>
+                                    <div class="event-month small text-uppercase">{{ evento.data_inicio|date:"M" }}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="card-body p-4">
+                                <!-- Tipo de evento -->
+                                <div class="event-category mb-2">
+                                    <span class="badge rounded-pill bg-primary">{{ evento.tipo.nome }}</span>
+                                </div>
+                                
+                                <!-- Título e Descrição -->
+                                <h3 class="h5 card-title mb-2">
+                                    <a href="{% url 'eventos:evento_detalhe' evento.slug %}" class="text-decoration-none">{{ evento.nome }}</a>
+                                </h3>
+                                <p class="card-text text-muted small mb-3">{{ evento.descricao_curta|truncatechars:80 }}</p>
+                                
+                                <!-- Detalhes -->
+                                <div class="event-details text-muted small mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-calendar-alt me-2"></i>
+                                        <span>{{ evento.data_inicio|date:"j F, Y" }} {% if evento.data_inicio|date:"Y-m-d" != evento.data_fim|date:"Y-m-d" %} - {{ evento.data_fim|date:"j F, Y" }}{% endif %}</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-clock me-2"></i>
+                                        <span>{{ evento.data_inicio|date:"H:i" }} - {{ evento.data_fim|date:"H:i" }}</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-map-marker-alt me-2"></i>
+                                        <span>{{ evento.local }}, {{ evento.cidade }}</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Botão -->
+                                <a href="{% url 'eventos:evento_detalhe' evento.slug %}" class="btn btn-sm btn-outline-primary">Ver detalles</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Paginação -->
+                {% if eventos.has_other_pages %}
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <nav aria-label="Paginação de eventos">
+                            <ul class="pagination justify-content-center">
+                                {% if eventos.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page=1" aria-label="Primeira">
+                                        <span aria-hidden="true">&laquo;&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ eventos.previous_page_number }}" aria-label="Anterior">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="Primeira">
+                                        <span aria-hidden="true">&laquo;&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="Anterior">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for num in eventos.paginator.page_range %}
+                                    {% if eventos.number == num %}
+                                    <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                                    {% elif num > eventos.number|add:'-3' and num < eventos.number|add:'3' %}
+                                    <li class="page-item"><a class="page-link" href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if eventos.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ eventos.next_page_number }}" aria-label="Próxima">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% if request.GET.urlencode %}{{ request.GET.urlencode }}&{% endif %}page={{ eventos.paginator.num_pages }}" aria-label="Última">
+                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                    </a>
+                                </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="Próxima">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="Última">
+                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% else %}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-5 text-center">
+                        <i class="fas fa-calendar-times fa-4x text-muted mb-4"></i>
+                        <h3 class="h4 mb-3">No se encontraron eventos</h3>
+                        <p class="text-muted mb-4">No hay eventos disponibles con los filtros seleccionados.</p>
+                        <a href="{% url 'eventos:eventos_lista' %}" class="btn btn-primary">Ver todos los eventos</a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Atualizar formulário ao selecionar tipo de evento
+        document.getElementById('tipo').addEventListener('change', function() {
+            document.getElementById('filtrosForm').submit();
+        });
+        
+        // Atualizar formulário ao selecionar status
+        document.getElementById('status').addEventListener('change', function() {
+            document.getElementById('filtrosForm').submit();
+        });
+    });
+</script>
+{% endblock %}

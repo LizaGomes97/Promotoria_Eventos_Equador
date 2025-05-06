@@ -1,0 +1,544 @@
+<!-- templates/eventos/calendario_eventos.html -->
+{% extends 'base.html' %}
+
+{% block title %}Calendario de Eventos - {{ config.nome_site|default:"Equador Eventos" }}{% endblock %}
+
+{% block meta_description %}Consulta nuestro calendario y planifica tu participación en los próximos eventos en Ecuador.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css" />
+<style>
+    /* Personalização do calendário */
+    .fc-event {
+        cursor: pointer;
+    }
+    
+    .evento-agendado {
+        background-color: var(--bs-success);
+        border-color: var(--bs-success);
+    }
+    
+    .evento-realizado {
+        background-color: var(--bs-secondary);
+        border-color: var(--bs-secondary);
+    }
+    
+    .evento-cancelado {
+        background-color: var(--bs-danger);
+        border-color: var(--bs-danger);
+    }
+    
+    .fc-daygrid-event-dot {
+        display: none;
+    }
+    
+    .fc-h-event .fc-event-title {
+        font-weight: 500;
+    }
+    
+    .fc .fc-button-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .fc .fc-button-primary:hover {
+        background-color: var(--secondary-color);
+        border-color: var(--secondary-color);
+    }
+    
+    .fc .fc-button-primary:not(:disabled).fc-button-active, 
+    .fc .fc-button-primary:not(:disabled):active {
+        background-color: var(--secondary-color);
+        border-color: var(--secondary-color);
+    }
+    
+    .fc-day-today {
+        background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
+    }
+    
+    /* Estilos para o popover */
+    .event-popover {
+        max-width: 300px;
+    }
+    
+    .event-popover-image {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+    
+    .event-popover-title {
+        font-weight: 600;
+        margin-top: 10px;
+        margin-bottom: 5px;
+        font-size: 1rem;
+    }
+    
+    .event-popover-date,
+    .event-popover-location {
+        font-size: 0.85rem;
+        margin-bottom: 5px;
+        color: var(--bs-gray-700);
+    }
+    
+    .event-popover-description {
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Cabeçalho da Página -->
+<section class="page-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold">Calendario de Eventos</h1>
+                <p class="lead">Visualiza y planifica tu participación en nuestros eventos</p>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center">
+                        <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-white">Inicio</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'eventos:eventos_lista' %}" class="text-white">Eventos</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Calendario</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Calendário -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 mb-4">
+                <!-- Legenda -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h3 class="h5 mb-4 border-bottom pb-3">Leyenda</h3>
+                        
+                        <div class="mb-3 d-flex align-items-center">
+                            <div class="badge bg-success p-2 me-2" style="width: 20px; height: 20px;"></div>
+                            <span>Eventos agendados</span>
+                        </div>
+                        
+                        <div class="mb-3 d-flex align-items-center">
+                            <div class="badge bg-secondary p-2 me-2" style="width: 20px; height: 20px;"></div>
+                            <span>Eventos realizados</span>
+                        </div>
+                        
+                        <div class="d-flex align-items-center">
+                            <div class="badge bg-danger p-2 me-2" style="width: 20px; height: 20px;"></div>
+                            <span>Eventos cancelados</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filtros -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h3 class="h5 mb-4 border-bottom pb-3">Filtros</h3>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Tipos de Evento</label>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input calendar-filter" type="checkbox" value="all" id="filterAll" checked>
+                                <label class="form-check-label" for="filterAll">
+                                    Todos los tipos
+                                </label>
+                            </div>
+                            
+                            {% for tipo in tipos_evento %}
+                            <div class="form-check">
+                                <input class="form-check-input calendar-filter" type="checkbox" value="{{ tipo.id }}" id="filter{{ tipo.id }}">
+                                <label class="form-check-label" for="filter{{ tipo.id }}">
+                                    {{ tipo.nome }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Estado</label>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input status-filter" type="checkbox" value="agendado" id="filterAgendado" checked>
+                                <label class="form-check-label" for="filterAgendado">
+                                    Agendados
+                                </label>
+                            </div>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input status-filter" type="checkbox" value="realizado" id="filterRealizado" checked>
+                                <label class="form-check-label" for="filterRealizado">
+                                    Realizados
+                                </label>
+                            </div>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input status-filter" type="checkbox" value="cancelado" id="filterCancelado" checked>
+                                <label class="form-check-label" for="filterCancelado">
+                                    Cancelados
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lista de Próximos Eventos -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h5 mb-4 border-bottom pb-3">Próximos Eventos</h3>
+                        
+                        <div id="proximosEventosLista">
+                            <!-- Será preenchido via JavaScript -->
+                            <div class="text-center py-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                                <p class="mt-2">Cargando próximos eventos...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-9">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div id="calendar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Template para os Próximos Eventos -->
+<template id="proximoEventoTemplate">
+    <div class="proximo-evento mb-3">
+        <div class="d-flex">
+            <div class="flex-shrink-0">
+                <div class="event-date bg-light text-center p-2 rounded">
+                    <div class="event-day fw-bold">{day}</div>
+                    <div class="event-month small text-uppercase">{month}</div>
+                </div>
+            </div>
+            <div class="ms-3">
+                <h4 class="h6 mb-1">
+                    <a href="{url}" class="text-decoration-none">{title}</a>
+                </h4>
+                <p class="text-muted small mb-0">{location}</p>
+            </div>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/locales-all.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Dados dos eventos
+        const eventos = JSON.parse("{{ eventos_json|safe }}");
+        
+        // Referência ao elemento do calendário
+        const calendarEl = document.getElementById('calendar');
+        
+        // Inicializar FullCalendar
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'es',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,listMonth'
+            },
+            events: eventos,
+            eventClick: function(info) {
+                // Redirecionar para a página de detalhes do evento apenas com clique em título
+                // Evita propagação se for clique em popup
+                if (info.jsEvent.defaultPrevented) {
+                    return;
+                }
+                window.location.href = info.event.url;
+            },
+            eventDidMount: function(info) {
+                // Configurar tooltip/popover para o evento
+                const event = info.event;
+                const description = event.extendedProps.description || '';
+                const location = event.extendedProps.location || '';
+                const tipoEvento = event.extendedProps.tipoNome || '';
+                
+                // Formatar datas
+                const options = { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                };
+                const startDate = new Date(event.start).toLocaleDateString('es-ES', options);
+                let dateInfo = startDate;
+                
+                if (event.end) {
+                    const endDate = new Date(event.end).toLocaleDateString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    dateInfo += ` - ${endDate}`;
+                }
+                
+                // Criar popover
+                new bootstrap.Popover(info.el, {
+                    title: event.title,
+                    html: true,
+                    content: `
+                        <div class="event-popover">
+                            <div class="badge bg-primary mb-2">${tipoEvento}</div>
+                            <p class="event-popover-date">
+                                <i class="fas fa-calendar-alt me-1"></i> ${startDate}
+                            </p>
+                            <p class="event-popover-location">
+                                <i class="fas fa-map-marker-alt me-1"></i> ${location}
+                            </p>
+                            <p class="event-popover-description">${description}</p>
+                            <a href="${event.url}" class="btn btn-sm btn-outline-primary">Ver detalles</a>
+                        </div>
+                    `,
+                    placement: 'top',
+                    trigger: 'hover',
+                    container: 'body',
+                    customClass: 'event-popover-container'
+                });
+            },
+            // Opções adicionais
+            dayMaxEvents: true, // Para limitar quantidade de eventos mostrados
+            eventTimeFormat: {
+                hour: '2-digit',
+                minute: '2-digit',
+                meridiem: false,
+                hour12: false
+            },
+            buttonText: {
+                today: 'Hoy',
+                month: 'Mes',
+                week: 'Semana',
+                list: 'Lista'
+            },
+            firstDay: 1, // Segunda-feira como primeiro dia da semana
+            // Para visualização de lista
+            listDayFormat: { weekday: 'long', month: 'long', day: 'numeric', omitCommas: true },
+            listDayAltFormat: { year: 'numeric' },
+            noEventsContent: 'No hay eventos para mostrar'
+        });
+        
+        // Renderizar o calendário
+        calendar.render();
+        
+        // Filtros do calendário
+        const calendarFilters = document.querySelectorAll('.calendar-filter');
+        const statusFilters = document.querySelectorAll('.status-filter');
+        
+        function applyFilters() {
+            // Obter tipos de evento selecionados
+            const selectedTypes = [];
+            const allTypesFilter = document.getElementById('filterAll');
+            
+            if (allTypesFilter.checked) {
+                // Se "Todos os tipos" estiver marcado, não filtramos por tipo
+            } else {
+                // Caso contrário, obtemos os tipos marcados
+                calendarFilters.forEach(filter => {
+                    if (filter.checked && filter.value !== 'all') {
+                        selectedTypes.push(filter.value);
+                    }
+                });
+            }
+            
+            // Obter estados selecionados
+            const selectedStatus = [];
+            statusFilters.forEach(filter => {
+                if (filter.checked) {
+                    selectedStatus.push(filter.value);
+                }
+            });
+            
+            // Aplicar filtros no calendário
+            calendar.getEvents().forEach(event => {
+                const eventType = event.extendedProps.tipoId;
+                const eventStatus = event.extendedProps.status;
+                
+                let typeMatch = allTypesFilter.checked || selectedTypes.includes(eventType.toString());
+                let statusMatch = selectedStatus.includes(eventStatus);
+                
+                if (typeMatch && statusMatch) {
+                    event.setProp('display', 'auto');
+                } else {
+                    event.setProp('display', 'none');
+                }
+            });
+            
+            // Atualizar a lista de próximos eventos
+            updateProximosEventos();
+        }
+        
+        // Adicionar evento de mudança para os filtros
+        calendarFilters.forEach(filter => {
+            filter.addEventListener('change', function() {
+                // Se "Todos os tipos" for marcado, desmarcar os outros
+                if (this.value === 'all' && this.checked) {
+                    calendarFilters.forEach(f => {
+                        if (f.value !== 'all') {
+                            f.checked = false;
+                        }
+                    });
+                }
+                // Se outro filtro for marcado, desmarcar "Todos os tipos"
+                else if (this.value !== 'all' && this.checked) {
+                    document.getElementById('filterAll').checked = false;
+                }
+                
+                // Se nenhum filtro estiver marcado, marcar "Todos os tipos"
+                let anyChecked = false;
+                calendarFilters.forEach(f => {
+                    if (f.checked) anyChecked = true;
+                });
+                
+                if (!anyChecked) {
+                    document.getElementById('filterAll').checked = true;
+                }
+                
+                applyFilters();
+            });
+        });
+        
+        // Adicionar evento de mudança para os filtros de status
+        statusFilters.forEach(filter => {
+            filter.addEventListener('change', applyFilters);
+        });
+        
+        // Função para atualizar a lista de próximos eventos
+        function updateProximosEventos() {
+            const proximosEventosLista = document.getElementById('proximosEventosLista');
+            const template = document.getElementById('proximoEventoTemplate').innerHTML;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Normalizar para início do dia
+            
+            // Limpar lista atual
+            proximosEventosLista.innerHTML = '';
+            
+            // Obter eventos visíveis e futuros
+            const futurosEventos = calendar.getEvents()
+                .filter(event => {
+                    const eventStart = new Date(event.start);
+                    return event.display !== 'none' && 
+                           eventStart >= today && 
+                           event.extendedProps.status === 'agendado';
+                })
+                .sort((a, b) => new Date(a.start) - new Date(b.start))
+                .slice(0, 5); // Limitar a 5 eventos
+            
+            if (futurosEventos.length === 0) {
+                proximosEventosLista.innerHTML = '<p class="text-muted text-center py-3">No hay próximos eventos con los filtros seleccionados.</p>';
+                return;
+            }
+            
+            // Adicionar cada evento à lista
+            futurosEventos.forEach(event => {
+                const eventDate = new Date(event.start);
+                const day = eventDate.getDate();
+                const monthNames = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+                const month = monthNames[eventDate.getMonth()];
+                
+                let eventHTML = template
+                    .replace('{day}', day)
+                    .replace('{month}', month)
+                    .replace('{title}', event.title)
+                    .replace('{location}', event.extendedProps.location || '')
+                    .replace('{url}', event.url);
+                
+                proximosEventosLista.innerHTML += eventHTML;
+            });
+        }
+        
+        // Atualizar próximos eventos na carga inicial
+        setTimeout(updateProximosEventos, 500);
+        
+        // Adicionar botão de exportar calendário
+        const headerToolbar = document.querySelector('.fc-toolbar-chunk:last-child');
+        if (headerToolbar) {
+            const exportButton = document.createElement('button');
+            exportButton.className = 'fc-button fc-button-primary';
+            exportButton.innerHTML = '<i class="fas fa-download me-1"></i> Exportar';
+            exportButton.addEventListener('click', exportCalendar);
+            headerToolbar.appendChild(exportButton);
+        }
+        
+        // Função para exportar calendário
+        function exportCalendar() {
+            // Obter eventos visíveis
+            const visibleEvents = calendar.getEvents().filter(event => event.display !== 'none');
+            
+            // Criar conteúdo iCalendar
+            let icsContent = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//EquadorEventos//Calendar//ES'
+            ];
+            
+            // Adicionar cada evento
+            visibleEvents.forEach(event => {
+                const startDate = new Date(event.start);
+                const endDate = event.end ? new Date(event.end) : new Date(startDate.getTime() + 3600000); // +1h se não tiver fim
+                
+                // Formatar datas para iCalendar (YYYYMMDDTHHmmssZ)
+                const formatDate = (date) => {
+                    return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+                };
+                
+                icsContent.push('BEGIN:VEVENT');
+                icsContent.push(`UID:${event.id || Date.now()}@equadoreventos.com`);
+                icsContent.push(`DTSTAMP:${formatDate(new Date())}`);
+                icsContent.push(`DTSTART:${formatDate(startDate)}`);
+                icsContent.push(`DTEND:${formatDate(endDate)}`);
+                icsContent.push(`SUMMARY:${event.title}`);
+                
+                if (event.extendedProps.description) {
+                    icsContent.push(`DESCRIPTION:${event.extendedProps.description.replace(/\n/g, '\\n')}`);
+                }
+                
+                if (event.extendedProps.location) {
+                    icsContent.push(`LOCATION:${event.extendedProps.location}`);
+                }
+                
+                icsContent.push('END:VEVENT');
+            });
+            
+            icsContent.push('END:VCALENDAR');
+            
+            // Criar e acionar download
+            const blob = new Blob([icsContent.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'equador-eventos-calendario.ics';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+        
+        // Adicionar responsividade
+        window.addEventListener('resize', function() {
+            calendar.updateSize();
+        });
+    });
+</script>
+{% endblock %}

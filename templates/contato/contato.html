@@ -1,0 +1,281 @@
+<!-- templates/contato/contato.html -->
+{% extends 'base.html' %}
+
+{% block title %}Contacto - {{ config.nome_site|default:"Equador Eventos" }}{% endblock %}
+
+{% block meta_description %}Contáctanos para cotizar tu evento o solicitar más información sobre nuestros servicios de organización de eventos en Ecuador.{% endblock %}
+
+{% block content %}
+<!-- Cabeçalho da Página -->
+<section class="page-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold">Contacto</h1>
+                <p class="lead">Estamos listos para ayudarte a crear tu evento inolvidable</p>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center">
+                        <li class="breadcrumb-item"><a href="{% url 'core:home' %}" class="text-white">Inicio</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Contacto</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Informações de Contato -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Informações -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <h3 class="h4 mb-4 border-bottom pb-3">Información de Contacto</h3>
+                        
+                        <div class="d-flex mb-4">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-map-marker-alt fa-2x text-primary"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h4 class="h6 mb-1">Dirección</h4>
+                                <p class="mb-0">
+                                    {% if config and config.endereco %}
+                                        {{ config.endereco }}
+                                    {% else %}
+                                        Av. Principal #123, Quito, Ecuador
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex mb-4">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-phone fa-2x text-primary"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h4 class="h6 mb-1">Teléfono</h4>
+                                <p class="mb-0">
+                                    {% if config and config.telefone %}
+                                        {{ config.telefone }}
+                                    {% else %}
+                                        +593 2 123 4567
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        {% if config and config.whatsapp %}
+                        <div class="d-flex mb-4">
+                            <div class="flex-shrink-0">
+                                <i class="fab fa-whatsapp fa-2x text-primary"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h4 class="h6 mb-1">WhatsApp</h4>
+                                <p class="mb-0">
+                                    {{ config.whatsapp }}
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-flex mb-4">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-envelope fa-2x text-primary"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h4 class="h6 mb-1">Email</h4>
+                                <p class="mb-0">
+                                    {% if config and config.email_contato %}
+                                        {{ config.email_contato }}
+                                    {% else %}
+                                        info@equadoreventos.com
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-clock fa-2x text-primary"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h4 class="h6 mb-1">Horario de Atención</h4>
+                                <p class="mb-0">
+                                    {% if config and config.horario_funcionamento %}
+                                        {{ config.horario_funcionamento }}
+                                    {% else %}
+                                        Lunes a Viernes: 9:00 AM - 6:00 PM<br>
+                                        Sábado: 9:00 AM - 1:00 PM
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Formulário de Contato -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h3 class="h4 mb-4 border-bottom pb-3">Envíanos un mensaje</h3>
+                        
+                        <form id="contactForm" method="post" class="needs-validation" novalidate>
+                            {% csrf_token %}
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.nome.id_for_label }}" class="form-label">Nombre completo *</label>
+                                        {{ form.nome }}
+                                        <div class="invalid-feedback">
+                                            Por favor, ingresa tu nombre completo.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.email.id_for_label }}" class="form-label">Email *</label>
+                                        {{ form.email }}
+                                        <div class="invalid-feedback">
+                                            Por favor, ingresa un email válido.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.telefone.id_for_label }}" class="form-label">Teléfono *</label>
+                                        {{ form.telefone }}
+                                        <div class="invalid-feedback">
+                                            Por favor, ingresa tu número de teléfono.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.assunto.id_for_label }}" class="form-label">Asunto *</label>
+                                        {{ form.assunto }}
+                                        <div class="invalid-feedback">
+                                            Por favor, selecciona un asunto.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-group mb-3">
+                                        <label for="{{ form.mensagem.id_for_label }}" class="form-label">Mensaje *</label>
+                                        {{ form.mensagem }}
+                                        <div class="invalid-feedback">
+                                            Por favor, escribe tu mensaje.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="privacyPolicy" required>
+                                        <label class="form-check-label" for="privacyPolicy">
+                                            He leído y acepto la <a href="#" data-bs-toggle="modal" data-bs-target="#privacyPolicyModal">política de privacidad</a> *
+                                        </label>
+                                        <div class="invalid-feedback">
+                                            Debes aceptar la política de privacidad para continuar.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">Enviar mensaje</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Mapa -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-0">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d127635.40110980182!2d-78.5441850153694!3d-0.22068451041941882!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x91d59a4002427c9f%3A0x44b991e158ef5572!2sQuito%2C%20Ecuador!5e0!3m2!1ses!2sbr!4v1651270114411!5m2!1ses!2sbr" 
+                                width="100%" 
+                                height="450" 
+                                style="border:0;" 
+                                allowfullscreen="" 
+                                loading="lazy" 
+                                referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal de Política de Privacidade -->
+<div class="modal fade" id="privacyPolicyModal" tabindex="-1" aria-labelledby="privacyPolicyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="privacyPolicyModalLabel">Política de Privacidad</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h4>Política de Privacidad</h4>
+                <p>Esta política de privacidad establece cómo Equador Eventos utiliza y protege cualquier información que usted proporciona cuando utiliza este sitio web.</p>
+                
+                <h5>Información que recopilamos</h5>
+                <p>Podemos recopilar la siguiente información:</p>
+                <ul>
+                    <li>Nombre y cargo</li>
+                    <li>Información de contacto, incluida la dirección de correo electrónico</li>
+                    <li>Información demográfica como código postal, preferencias e intereses</li>
+                    <li>Otra información relevante para encuestas y/o ofertas de clientes</li>
+                </ul>
+                
+                <h5>¿Qué hacemos con la información que recopilamos?</h5>
+                <p>Requerimos esta información para entender sus necesidades y brindarle un mejor servicio, y en particular por las siguientes razones:</p>
+                <ul>
+                    <li>Mantenimiento de registros internos.</li>
+                    <li>Podemos utilizar la información para mejorar nuestros productos y servicios.</li>
+                    <li>Podemos enviar periódicamente correos electrónicos promocionales sobre nuevos productos, ofertas especiales u otra información que pensamos que puede resultarle interesante utilizando la dirección de correo electrónico que ha proporcionado.</li>
+                    <li>De vez en cuando, también podemos utilizar su información para contactarlo con fines de investigación de mercado. Podemos contactarlo por correo electrónico, teléfono o correo postal.</li>
+                </ul>
+                
+                <h5>Seguridad</h5>
+                <p>Estamos comprometidos a garantizar que su información esté segura. Para evitar el acceso no autorizado o la divulgación, hemos implementado procedimientos físicos, electrónicos y administrativos adecuados para salvaguardar y proteger la información que recopilamos en línea.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Validação do formulário
+        var form = document.getElementById('contactForm');
+        
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        }, false);
+    });
+</script>
+{% endblock %}
